@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'"
+    />
+    <title>Tally</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="booting">
+    <div class="app" id="app">
+      <!-- ------------------------------------------------------- title bar -->
+      <header class="titlebar">
+        <div class="titlebar-drag">
+          <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="1.5" y="1.5" width="21" height="21" rx="6" />
+            <path class="logo-tick" d="M6.8 12.4 L10.2 15.8 L17.2 7.8" />
+          </svg>
+          <span class="wordmark">Tally</span>
+        </div>
+        <div class="winctl">
+          <button class="winbtn" id="btn-compact" title="Compact mode (always on top)" aria-label="Compact mode">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <rect x="1.5" y="2.5" width="13" height="11" rx="2" />
+              <rect class="pip" x="7.5" y="7.5" width="6" height="5" rx="1.2" />
+            </svg>
+          </button>
+          <button class="winbtn" id="btn-settings" title="Settings" aria-label="Settings">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2 4.5h12M2 8h12M2 11.5h12" />
+              <circle class="knob" cx="5.5" cy="4.5" r="1.7" />
+              <circle class="knob" cx="10.5" cy="8" r="1.7" />
+              <circle class="knob" cx="6.5" cy="11.5" r="1.7" />
+            </svg>
+          </button>
+          <button class="winbtn" id="btn-min" title="Minimise" aria-label="Minimise">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10" /></svg>
+          </button>
+          <button class="winbtn winbtn-close" id="btn-close" title="Close to tray" aria-label="Close">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- --------------------------------------------------- progress strip -->
+      <div class="progress" id="progress">
+        <span class="level" id="level-badge" title="Level">LV&nbsp;1</span>
+        <div class="xp" id="xp-track" title="Experience">
+          <div class="xp-fill" id="xp-fill"></div>
+        </div>
+        <span class="xp-text" id="xp-text">0 / 40</span>
+        <span class="streak" id="streak" title="Daily streak">
+          <svg class="flame" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 1.5c2.6 2.4 4.6 4.3 4.6 7A4.6 4.6 0 0 1 8 14.5a4.6 4.6 0 0 1-4.6-6c0 0 1.3 1.1 2.2.6C4.4 6.6 6.2 4.1 8 1.5Z" />
+          </svg>
+          <span id="streak-count">0</span>
+        </span>
+      </div>
+
+      <!-- ------------------------------------------------------- composer -->
+      <div class="composer">
+        <div class="composer-row">
+          <svg class="composer-plus" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 3.5v9M3.5 8h9" />
+          </svg>
+          <input
+            id="composer-input"
+            class="composer-input"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            maxlength="480"
+            placeholder="Add a task…"
+            aria-label="Add a task"
+          />
+          <button class="composer-btn" id="btn-priority" title="Priority (or type ! / !!)" aria-label="Priority">
+            <span class="prio-mark" id="prio-mark">—</span>
+          </button>
+          <button class="composer-btn" id="btn-due" title="Due date (or type a date)" aria-label="Due date">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <rect x="2" y="3.5" width="12" height="10.5" rx="2" />
+              <path d="M2 6.5h12M5.5 1.8v2.4M10.5 1.8v2.4" />
+            </svg>
+          </button>
+        </div>
+        <div class="parse-preview" id="parse-preview" hidden></div>
+      </div>
+
+      <!-- ----------------------------------------------------------- views -->
+      <nav class="views" id="views">
+        <button class="view" data-view="today">Today<span class="view-count" data-count="today"></span></button>
+        <button class="view" data-view="upcoming">Upcoming<span class="view-count" data-count="upcoming"></span></button>
+        <button class="view" data-view="all">All<span class="view-count" data-count="all"></span></button>
+        <button class="view" data-view="done">Done</button>
+      </nav>
+
+      <div class="tagbar" id="tagbar" hidden></div>
+
+      <!-- ------------------------------------------------------------ list -->
+      <main class="list" id="list" tabindex="-1"></main>
+
+      <!-- ------------------------------------------------------------ foot -->
+      <footer class="statusbar">
+        <span class="status-text" id="status-text"></span>
+        <button class="status-help" id="btn-help" title="Shortcuts and syntax" aria-label="Help">?</button>
+      </footer>
+    </div>
+
+    <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+    <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+    <div class="menu" id="menu" hidden></div>
+
+    <!-- ------------------------------------------------------ slide-overs -->
+    <div class="sheet" id="settings-sheet" hidden>
+      <div class="sheet-head">
+        <h2>Settings</h2>
+        <button class="sheet-close" data-close="settings-sheet" aria-label="Close">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <section class="group">
+          <h3>Feel</h3>
+          <label class="opt"><span>Sound effects</span><input type="checkbox" id="set-sound" /></label>
+        </section>
+
+        <section class="group">
+          <h3>Windows</h3>
+          <label class="opt">
+            <span>Close button hides to tray<em>Tally keeps running in the notification area</em></span>
+            <input type="checkbox" id="set-tray" />
+          </label>
+          <label class="opt">
+            <span>Launch when I sign in</span>
+            <input type="checkbox" id="set-startup" />
+          </label>
+          <label class="opt opt-sub">
+            <span>Start hidden in the tray</span>
+            <input type="checkbox" id="set-start-min" />
+          </label>
+        </section>
+
+        <section class="group">
+          <h3>Your data</h3>
+          <p class="hint" id="data-path-hint">Saved automatically to your Windows user profile.</p>
+          <div class="btnrow">
+            <button class="btn" id="btn-export">Export…</button>
+            <button class="btn" id="btn-import">Import…</button>
+            <button class="btn btn-ghost" id="btn-reveal">Show folder</button>
+          </div>
+        </section>
+
+        <section class="group">
+          <h3>Record</h3>
+          <dl class="stats">
+            <div><dt>Tasks completed</dt><dd id="stat-total">0</dd></div>
+            <div><dt>Total XP</dt><dd id="stat-xp">0</dd></div>
+            <div><dt>Current streak</dt><dd id="stat-streak">0 days</dd></div>
+            <div><dt>Best streak</dt><dd id="stat-best">0 days</dd></div>
+          </dl>
+        </section>
+
+        <p class="version" id="version-line">Tally</p>
+      </div>
+    </div>
+
+    <div class="sheet" id="help-sheet" hidden>
+      <div class="sheet-head">
+        <h2>Shortcuts</h2>
+        <button class="sheet-close" data-close="help-sheet" aria-label="Close">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <section class="group">
+          <h3>Type it in</h3>
+          <p class="hint">Write the task, then add any of these. A preview under the box shows what Tally understood.</p>
+          <dl class="keys">
+            <div><dt><code>#work</code></dt><dd>tag (anywhere in the line)</dd></div>
+            <div><dt><code>!</code> / <code>!!</code></dt><dd>important / urgent — worth more XP</dd></div>
+            <div><dt><code>today</code> <code>tomorrow</code> <code>fri</code></dt><dd>due date, at the end</dd></div>
+            <div><dt><code>in 3 days</code> <code>next week</code></dt><dd>relative due date</dd></div>
+            <div><dt><code>25.9</code> <code>25.9.2026</code></dt><dd>exact date</dd></div>
+            <div><dt><code>every day</code> <code>every mon</code></dt><dd>repeats — comes back when done</dd></div>
+          </dl>
+          <p class="hint">
+            <code>Renew passport !! #admin 25.9</code> becomes an urgent, tagged task due 25 September.
+          </p>
+        </section>
+
+        <section class="group">
+          <h3>Keys</h3>
+          <dl class="keys">
+            <div><dt><kbd>Enter</kbd></dt><dd>add the task — or, with an empty box, finish the selected one</dd></div>
+            <div><dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>move the selection</dd></div>
+            <div><dt><kbd>Space</kbd></dt><dd>finish the selected task (empty box)</dd></div>
+            <div><dt><kbd>Del</kbd></dt><dd>delete the selected task (empty box)</dd></div>
+            <div><dt><kbd>F2</kbd></dt><dd>rename the selected task</dd></div>
+            <div><dt><kbd>Alt</kbd>+<kbd>1…3</kbd></dt><dd>normal / important / urgent on the selection</dd></div>
+            <div><dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>undo — works on everything, including finishing a task</dd></div>
+            <div><dt><kbd>Ctrl</kbd>+<kbd>1…4</kbd></dt><dd>switch view</dd></div>
+            <div><dt><kbd>Ctrl</kbd>+<kbd>K</kbd></dt><dd>compact always-on-top mode</dd></div>
+            <div><dt><kbd>F1</kbd></dt><dd>this panel</dd></div>
+            <div><dt><kbd>Esc</kbd></dt><dd>clear the box, then the selection</dd></div>
+          </dl>
+        </section>
+      </div>
+    </div>
+
+    <!-- --------------------------------------------------------- templates -->
+    <template id="tpl-task">
+      <li class="task" tabindex="-1">
+        <span class="prio" data-role="prio" title="Priority"></span>
+        <button class="check" data-role="check" aria-label="Mark done">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="check-ring" cx="12" cy="12" r="8.5" />
+            <path class="check-tick" d="M7.6 12.4 L10.4 15.2 L16.4 8.8" />
+          </svg>
+        </button>
+        <span class="task-main">
+          <span class="task-title" data-role="title"></span>
+          <span class="task-meta" data-role="meta"></span>
+        </span>
+        <button class="task-more" data-role="more" aria-label="Task options">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="3.2" cy="8" r="1.3" /><circle cx="8" cy="8" r="1.3" /><circle cx="12.8" cy="8" r="1.3" />
+          </svg>
+        </button>
+      </li>
+    </template>
+
+    <script src="lib/dates.js"></script>
+    <script src="lib/parse.js"></script>
+    <script src="lib/game.js"></script>
+    <script src="lib/sound.js"></script>
+    <script src="lib/confetti.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

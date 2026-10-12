@@ -1,0 +1,50 @@
+{
+  "name": "tally",
+  "productName": "Tally",
+  "version": "1.0.0",
+  "description": "A minimal, gamified task list for getting things done.",
+  "main": "src/main/main.js",
+  "private": true,
+  "author": "Roope Mantere",
+  "scripts": {
+    "start": "electron .",
+    "icon": "node tools/make-icon.js",
+    "dist": "electron-builder --win",
+    "pack": "electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "44.4.2",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.roopemantere.tally",
+    "productName": "Tally",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Tally",
+      "artifactName": "Tally-Setup-${version}.exe"
+    },
+    "portable": {
+      "artifactName": "Tally-${version}-portable.exe"
+    }
+  }
+}
